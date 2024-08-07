@@ -1,0 +1,181 @@
+// This is a comment
+/*
+This is a multi
+line comment
+*/
+
+// Custom data types
+
+true
+false
+null
+
+// Numbers
+
+let x = 10 // {prototype: Number, properties: {}, value: 10}
+let a: number = 10 // types are ignored. unlike python.
+a = 20
+a += 10
+// + - * / % ** & | ^ << >> ~ && || ?? > < <= >= == != ! @ #
+// += -= *= /= %= &= |= >>= <<= ~= &&= ||= ??= @= #=
+
+
+
+// Big Numbers, uses GMP
+
+let x = 101248912417289712897127142.5231782789417728747489227471427n // {prototype: BigNumber, properties: {}, value: 101248912417289712897127142.5231782789417728747489227471427}
+x **= 5
+
+
+
+// Arrays
+
+let arr = [1, 2, 3, 4, 5, 6, 7]
+arr.push(5, 4, 3)
+arr.pop(-1)
+arr[-1] = 5
+print(arr[2:5])
+print(arr[2:5:2])
+print(arr[::-1])
+
+[one, two, three] = arr
+
+
+
+// Objects
+
+let obj = {hello: "hello", world: "world", deeper: {myNum: 25}}
+obj.a = 10
+b.x // throws IndexError
+
+{hello, world, deeper: {myNum}} = obj
+{hello: hi, world: earth, deeper: {myNum: twentyFive}} = obj
+
+
+
+// Immediate scopes
+
+let a = 10
+{
+    let a = 20
+    a // 20
+}
+a // 10
+
+
+
+// Function definitions
+
+fn myFunction(x: number): number { // types are ignored.
+    return x
+}
+
+
+
+// Lambda functions
+
+(x) => print("hi")
+(x: number): number => { // types are ignored.
+    print("hi")
+    return x
+}
+
+
+
+// Classes
+
+class MyClass {
+    c = 10 // Will not be pre-computed, instead it will be set when instantiated
+
+    constructor(a) {
+        this.a = a
+        this.b = 20
+    }
+
+    increaseA() {
+        this.a++
+    }
+}
+
+print(MyClass) // {prototype: Object, properties: {__call__: function, increaseA: function}}
+myInstance = MyClass(10) // {prototype: MyClass, properties: {a: 10, b: 20, c: 10}}
+
+class MyExtendedClass extends MyClass {
+    c = 20 // Overrides the previous definition of c
+
+    constructor(a, d) {
+        super(a)
+        this.d = 20
+    }
+
+    increaseB() {
+        super.increaseA()
+        this.b++
+    }
+}
+
+print(MyExtendedClass) // {prototype: Object, properties: {__call__: function, increaseA: function, increaseB: function}}
+myExtendedInstance = MyExtendedClass(40, 80) // {prototype: MyExtendedClass, properties: {a: 40, b: 20, c: 10, d: 20}}
+
+
+
+// Printing
+
+print("Hello, world!")
+print("Hello, world!", end:"")
+
+
+
+// Importing
+
+import "./file.neo"
+from "./file.neo" import addNumbers
+
+addNumbers(1, 2)
+
+
+
+// If flows
+
+if a < 10 {
+} else if a > 10 {
+} else {
+}
+
+
+
+// Loops
+
+loop {
+}
+
+while true {
+}
+
+do {
+
+} while true
+
+for value in iterable {
+}
+
+for num in 1..3 {
+}
+
+for i, num in enumerate(iterable) {
+}
+
+for let i = 0; i < 10; i++ {
+}
+
+loop {
+    loop {
+        break 2
+    }
+}
+
+for i in 0..9 {
+    for i in 0..9 {
+        continue 2 // Breaks the current loop and continues the parent loop
+    }
+}

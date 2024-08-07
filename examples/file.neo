@@ -1,0 +1,3 @@
+fn addNumbers(a, b) {
+    print(a + b)
+}
