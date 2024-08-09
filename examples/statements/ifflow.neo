@@ -1,0 +1,7 @@
+if (a < 10) {
+    print("hi0")
+} else if (a > 10) {
+    print("hi1")
+} else {
+    print("hi2")
+}

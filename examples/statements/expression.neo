@@ -1,0 +1,19 @@
+10
+a
+a = 10
+a += 20
+a -= 70
+a = 1n
+a = []
+a()
+a.b.c.d()[0]
+
+[a, b, c] = x
+{a, b, c} = x
+
+x => print("hi")
+x: number => print("hi")
+(x) => print("hi")
+(x: number): number => { // types are ignored.
+    print("hi")
+}

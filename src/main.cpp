@@ -2,7 +2,6 @@
 #include "parser.h"
 #include <sstream>
 #include <fstream>
-#include <string>
 #include <iostream>
 
 
@@ -23,16 +22,15 @@ int main(int argc, char *argv[]) {
     stringstream buffer;
     buffer << file.rdbuf();
 
-    auto lexer = new Lexer(filename, buffer.str());
-    lexer->tokenize();
-    lexer->groupTokens();
-    auto parser = new Parser(lexer);
-    parser->parse();
+    auto lexer = Lexer(buffer.str());
+    lexer.tokenize();
+    lexer.groupTokens();
 
-    lexer->dump();
+    auto parser = Parser(lexer);
+    parser.parse();
+    parser.dump();
 
-    lexer->free();
-    parser->free();
+    lexer.freeTokens();
 
     file.close();
     return 0;

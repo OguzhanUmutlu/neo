@@ -1,0 +1,26 @@
+class MyClass {
+    c = 10
+
+    constructor(a) {
+        this.a = a
+        this.b = 20
+    }
+
+    increaseA() {
+        this.a++
+    }
+}
+
+class MyExtendedClass extends MyClass {
+    c = 20
+
+    constructor(a, d) {
+        super(a)
+        this.d = 20
+    }
+
+    increaseB() {
+        super.increaseA()
+        this.b++
+    }
+}

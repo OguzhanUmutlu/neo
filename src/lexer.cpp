@@ -1,7 +1,6 @@
 #include "lexer.h"
 #include "error.h"
 #include <string>
-#include <utility>
 #include <iostream>
 #include <unordered_set>
 #include <unordered_map>
@@ -11,17 +10,15 @@
 #pragma clang diagnostic ignored "-Wtrigraphs"
 using namespace std;
 
-// operators: + - * / % ** & | ^ << >> ~ && || ?? > < <= >= == != ! @ #
-
-#define isdigit(x) (x >= '0' && x <= '9')
+// operators: + - * / % ** & | ^ << >> ~ && || > < <= >= == != !
 
 unordered_set<char> whitespace = {' ', '\t', '\r', '\v'};
-unordered_set<char> symbols = {'.', ',', ':', ';', '='};
+unordered_set<char> symbols = {'.', ',', ':', ';', '=', '\\'};
 unordered_set<char> paren = {'(', ')', '{', '}', '[', ']'};
-unordered_set<char> singleOperators = {'+', '-', '*', '/', '%', '&', '|', '^', '~', '>', '<', '!', '@', '#'};
-unordered_set<string> doubleOperators = {"**", "<<", ">>", "&&", "||", "??", "<=", ">=", "==", "!="};
-unordered_set<string> doubleSetOperators = {"+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "~=", "++", "--"};
-unordered_set<string> tripleSetOperators = {"<<=", ">>=", "&&=", "||=", "??=", "**="};
+unordered_set<char> singleOperators = {'+', '-', '*', '/', '%', '&', '|', '^', '~', '>', '<', '!'};
+unordered_set<string> doubleOperators = {"**", "<<", ">>", "&&", "||", "<=", ">=", "==", "!="};
+unordered_set<string> doubleSetOperators = {"+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "~=", "++"};
+unordered_set<string> tripleSetOperators = {"<<=", ">>=", "&&=", "||=", "**="};
 unordered_set<string> keywords = {"let", "const", "if", "for", "loop", "while", "return", "break", "continue", "fn",
                                   "class", "import", "in"};
 unordered_map<TokenType, string> tokenTypeToString = {
@@ -30,6 +27,7 @@ unordered_map<TokenType, string> tokenTypeToString = {
         {T_IDENTIFIER,   "identifier"},
         {T_KEYWORD,      "keyword"},
         {T_OPERATOR,     "operator"},
+        {T_INC_OPERATOR, "inc-dec operator"},
         {T_SET_OPERATOR, "set operator"},
         {T_SYMBOL,       "symbol"},
         {T_PAREN,        "parenthesis"},
@@ -45,16 +43,24 @@ unordered_map<string, string> parenMap = {
         {"[", "]"}
 };
 
-
-Token::Token(TokenType type, string code, size_t start, size_t end, string value)
-        : type(type), code(std::move(code)), start(start), end(end), value(std::move(value)), parent(nullptr) {
+vector<vector<Token *>> splitTokens(vector<Token *> tokens, string delim) {
+    vector<vector<Token *>> result;
+    vector<Token *> current;
+    for (auto token: tokens) {
+        if (token->value == delim) {
+            result.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(token);
+        }
+    }
+    if (!current.empty()) {
+        result.push_back(current);
+    }
+    return result;
 }
 
-Token::Token(TokenType type, const string &code, size_t start, size_t end)
-        : Token(type, code, start, end, code.substr(start, end - start)) {
-}
-
-string tokensToString(const string &pre, vector<Token *> tokens) { // NOLINT(*-no-recursion)
+string tokensToString(const string &pre, vector<Token *> tokens) {
     string childrenStr;
     string nl = "\n" + pre;
     for (auto &token: tokens) {
@@ -64,7 +70,16 @@ string tokensToString(const string &pre, vector<Token *> tokens) { // NOLINT(*-n
     return childrenStr;
 }
 
-string Token::toString() const { // NOLINT(*-no-recursion)
+string tokensListToString(const string &pre, vector<vector<Token *>> tokens) {
+    string childrenStr;
+    string nl = "\n" + pre;
+    for (auto &token: tokens) {
+        childrenStr += pre + tokensToString(pre, token) + (token != tokens.back() ? ",\n" : "");
+    }
+    return childrenStr;
+}
+
+string Token::toString() {
     if (type == T_GROUP) {
         return "{'type': '" + tokenTypeToString.find(T_GROUP)->second + "', 'children': [\n" +
                tokensToString("    ", children) + "\n  ]\n}";
@@ -80,7 +95,7 @@ void Token::throwError(const std::string &message) const {
     ::throwError(message, code, start, end);
 }
 
-__attribute__((unused)) void Token::dump() const {
+__attribute__((unused)) void Token::dump() {
     cout << toString() << endl;
 }
 
@@ -88,18 +103,13 @@ void Token::updateValue() {
     this->value = this->code.substr(this->start, this->end - this->start);
 }
 
-void Token::free(bool freeChildren) { // NOLINT(*-no-recursion)
+void Token::free(bool freeChildren) {
     if (freeChildren) {
         for (auto token: children) {
             token->free(freeChildren);
         }
     }
     delete this;
-}
-
-Lexer::Lexer(string filePath, string code)
-        : filePath(std::move(filePath)), code(std::move(code)),
-          eof(new Token(TokenType::T_EOF, code, code.size(), code.size(), "")), index(-1) {
 }
 
 char Lexer::peek(size_t offset) {
@@ -118,15 +128,11 @@ char Lexer::current() {
     return peek(0);
 }
 
-void Lexer::skip(size_t offset) {
-    index += offset;
-}
-
 string Lexer::toString() const {
     return "{\n  'tokens': [\n" + tokensToString("    ", tokens) + "\n  ]\n}";
 }
 
-void Lexer::dump() const {
+__attribute__((unused)) void Lexer::dump() const {
     cout << toString() << endl;
 }
 
@@ -164,7 +170,7 @@ void Lexer::tokenize() {
                     break;
                 }
             }
-            skip(-1);
+            --index;
             continue;
         }
         if (chr == '/' && chr1 == '*') {
@@ -174,10 +180,15 @@ void Lexer::tokenize() {
                     break; // unterminated comment, but it doesn't matter, I guess, maybe throw an error
                 }
                 if (chr2 == '*' && peek(1) == '/') {
-                    skip(1);
+                    ++index;
                     break;
                 }
             }
+            continue;
+        }
+        if ((chr == '+' || chr == '-') && chr1 == chr) {
+            tokens.push_back(new Token(TokenType::T_INC_OPERATOR, code, si, si + 2, chr1str));
+            ++index;
             continue;
         }
         if (singleOperators.find(chr) != singleOperators.end()) {
@@ -185,7 +196,7 @@ void Lexer::tokenize() {
             continue;
         }
         if (paren.find(chr) != paren.end()) {
-            tokens.push_back(new Token(TokenType::T_PAREN, code, si - 1, si, chrStr));
+            tokens.push_back(new Token(TokenType::T_PAREN, code, si, si + 1, chrStr));
             continue;
         }
         if (doubleOperators.find(chr1str) != doubleOperators.end()) {
@@ -208,26 +219,28 @@ void Lexer::tokenize() {
 
         if (isdigit(chr) || (chr == '.' && isdigit(chr1))) {
             bool is_float = chr == '.';
-            while ((chr = next()) != '\0' && (isdigit(chr) || (!is_float && chr == '.')) || chr == 'n') {
+            while ((chr = next()) != '\0' && (isdigit(chr) || (!is_float && chr == '.' && peek(1) != '.'))) {
                 if (chr == '.') {
                     is_float = true;
                 }
-                if (chr == 'n') {
-                    skip(1);
-                    break;
+            }
+            if (chr == 'e') {
+                ++index;
+                chr = peek(1);
+                if (chr == '+' || chr == '-') {
+                    ++index;
+                }
+                if (!isdigit(peek(1))) {
+                    throwError("Expected an integer after the 'e' in the number", si, index);
+                }
+                while ((chr = next()) != '\0' && isdigit(chr)) {
                 }
             }
-            if (code[si] == '.' && !tokens.empty() && tokens.back()->type == TokenType::T_NUMBER &&
-                tokens.back()->value.back() == '.') {
-                auto backStart = tokens.back()->start;
-                tokens.back()->free();
-                tokens.pop_back();
-                tokens.push_back(new Token(TokenType::T_RANGE, code, backStart, index));
-                skip(-1);
-                continue;
+            if (chr == 'n') {
+                ++index;
             }
             tokens.push_back(new Token(TokenType::T_NUMBER, code, si, index));
-            skip(-1);
+            --index;
             continue;
         }
         if (symbols.find(chr) != symbols.end()) {
@@ -256,7 +269,7 @@ void Lexer::tokenize() {
             while ((chr = next()) != '\0' && (isalnum(chr) || chr == '_')) {
                 res += chr;
             }
-            skip(-1);
+            --index;
             if (keywords.find(res) != keywords.end()) {
                 tokens.push_back(new Token(TokenType::T_KEYWORD, code, si, index, res));
                 continue;
@@ -300,7 +313,7 @@ void Lexer::groupTokens() {
     program->free(false);
 }
 
-void Lexer::free() {
+void Lexer::freeTokens() {
     for (auto &token: tokens) {
         token->free();
     }
@@ -308,4 +321,5 @@ void Lexer::free() {
     eof->free();
     delete this;
 }
+
 #pragma clang diagnostic pop

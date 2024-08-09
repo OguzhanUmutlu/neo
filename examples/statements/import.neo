@@ -1,0 +1,5 @@
+import "./file.neo"
+from "./file.neo" import addNumbers
+from "os" import mkdir
+
+// import("./file.neo")

@@ -1,0 +1,19 @@
+fn myFunction() {
+    return 5
+}
+
+fn myFunction(x) {
+    return 5
+}
+
+fn myFunction(x, y, z) {
+    return 5
+}
+
+fn myFunction(x, y, z, *w, **q) {
+    return 5
+}
+
+fn myFunction(x: number, y: number, z: number, *w: array, **q: object): number {
+    return 5
+}

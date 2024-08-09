@@ -1,0 +1,22 @@
+loop {
+    print("hi")
+}
+
+while (true) {
+}
+
+do {
+
+} while (true)
+
+for (value in iterable) {
+}
+
+for (num in 1..3) {
+}
+
+for (i, num in array) {
+}
+
+for (let i = 0; i < 10; i++) {
+}
