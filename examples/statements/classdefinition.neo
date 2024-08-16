@@ -1,6 +1,4 @@
 class MyClass {
-    c = 10
-
     constructor(a) {
         this.a = a
         this.b = 20
@@ -12,8 +10,6 @@ class MyClass {
 }
 
 class MyExtendedClass extends MyClass {
-    c = 20
-
     constructor(a, d) {
         super(a)
         this.d = 20

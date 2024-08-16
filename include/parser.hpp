@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
-#include "lexer.h"
+#include "lexer.hpp"
 
 using namespace std;
 
@@ -22,6 +22,7 @@ typedef enum {
     S_DO_WHILE,
     S_FOR_ITERATOR,
     S_FOR_CLASSIC,
+    S_RETURN,
     S_BREAK,
     S_CONTINUE,
     S_CLASS_DEFINITION,
@@ -43,9 +44,9 @@ public:
 
 class VariableDeclarationStatement : public Statement {
 public:
-    VariableDeclarationStatement(vector<Token *> name, vector<Token *> value, bool constant)
+    VariableDeclarationStatement(Token *name, vector<Token *> value, bool constant)
             : name(std::move(name)), value(std::move(value)), constant(constant), Statement(S_VARIABLE_DECLARATION) {};
-    vector<Token *> name;
+    Token *name;
     vector<Token *> value;
     bool constant;
 
@@ -131,6 +132,15 @@ public:
     vector<Token *> condition;
     unique_ptr<Statement> iterator;
     vector<unique_ptr<Statement>> body;
+
+    string toString() override;
+};
+
+class ReturnStatement : public Statement {
+public:
+    ReturnStatement(vector<Token *> value) : value(value), Statement(S_RETURN) {};
+
+    vector<Token *> value;
 
     string toString() override;
 };
@@ -240,7 +250,11 @@ public:
     string toString();
 
     __attribute__((unused)) void dump();
+
+    void parseReturnStatement();
 };
+
+vector<vector<Token *>> separateExpression(vector<Token *> tokens);
 
 #endif
 

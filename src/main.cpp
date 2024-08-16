@@ -1,5 +1,7 @@
-#include "lexer.h"
-#include "parser.h"
+#include "lexer.hpp"
+#include "parser.hpp"
+#include "compiler.hpp"
+#include "error.hpp"
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -22,13 +24,15 @@ int main(int argc, char *argv[]) {
     stringstream buffer;
     buffer << file.rdbuf();
 
-    auto lexer = Lexer(buffer.str());
+    auto lexer = Lexer(buffer.str(), filename);
     lexer.tokenize();
     lexer.groupTokens();
 
     auto parser = Parser(lexer);
     parser.parse();
-    parser.dump();
+
+    auto compiler = Compiler(parser);
+    compiler.compile();
 
     lexer.freeTokens();
 

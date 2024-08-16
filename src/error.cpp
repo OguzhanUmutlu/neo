@@ -1,10 +1,10 @@
-#include "error.h"
+#include "error.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
 #include <sstream>
 
-void showCodeSnippet(const string &color, const string &code, size_t start, size_t end) {
+void showCodeSnippet(const string &color, const string &filename, const string &code, size_t index) {
     vector<string> lines;
     stringstream ss(code);
     string line;
@@ -13,43 +13,32 @@ void showCodeSnippet(const string &color, const string &code, size_t start, size
         lines.push_back(line);
     }
 
-    size_t lineStart = 0, lineEnd = 0, charCount = 0;
-
+    size_t charCount = 0;
     for (size_t i = 0; i < lines.size(); ++i) {
-        charCount += lines[i].size() + 1; // +1 for the newline character
-
-        if (charCount > start && lineStart == 0) {
-            lineStart = i;
-        }
-        if (charCount >= end) {
-            lineEnd = i;
-            break;
+        size_t oldCharCount = charCount;
+        charCount += lines[i].size() + 1;
+        if (index >= oldCharCount && index < charCount) {
+            line = lines[i];
+            size_t ind = index - oldCharCount;
+            cout << color << "Error on file " << filename << ", line " << (i + 1) << ", column "
+                 << (ind + 1) << ":" << RESET << endl;
+            cout << "    " << ITALIC << line.substr(0, ind) << (ind >= line.size() ? ' ' : line[ind])
+                 << (ind >= line.size() ? " " : line.substr(ind + 1)) << RESET << endl;
+            for (size_t j = 0; j < ind + 4; ++j) {
+                cout << " ";
+            }
+            return;
         }
     }
-
-    cout << color;
-
-    for (size_t i = lineStart;
-         i <= lineEnd; ++i) {
-        cout << i + 1 << " | ";
-
-        size_t lineStartPos = (i == lineStart) ? start - (charCount - lines[i].size() - 1) : 0;
-        size_t lineEndPos = (i == lineEnd) ? end - (charCount - lines[i].size() - 1) : lines[i].size();
-
-        cout << lines[i].substr(0, lineStartPos);
-        cout << UNDERLINE << lines[i].substr(lineStartPos, lineEndPos - lineStartPos) << RESET << color;
-        if (lines[i].size() > lineEndPos) {
-            cout << lines[i].substr(lineEndPos);
-        } else {
-            cout << WHITE_BG << " ";
-        }
-        cout << RESET;
-        cout << endl;
-    }
+    return;
 }
 
-void throwError(const string &message, const string &code, size_t start, size_t end) {
-    showCodeSnippet(RED, code, start, end);
-    cout << RED << message << endl;
+void showError(const string &message, const string &filename, const string &code, size_t index) {
+    showCodeSnippet(RED, filename, code, index);
+    cout << YELLOW << "^ " << message << endl;
+}
+
+void throwError(const string &message, const string &filename, const string &code, size_t index) {
+    showError(message, filename, code, index);
     exit(1);
 }

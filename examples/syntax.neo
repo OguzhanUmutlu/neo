@@ -47,6 +47,7 @@ let [one, two, three] = arr
 let obj = {hello: "hello", world: "world", deeper: {myNum: 25}}
 obj.a = 10
 b.x // throws IndexError
+delete obj.a
 
 const {hello, world, deeper: {myNum}} = obj
 const {hello: hi, world: earth, deeper: {myNum: twentyFive}} = obj
@@ -85,8 +86,6 @@ fn myFunction(x: number): number { // types are ignored.
 // Classes
 
 class MyClass {
-    c = 10 // Will not be pre-computed, instead it will be set when instantiated
-
     constructor(a) {
         this.a = a
         this.b = 20
@@ -98,11 +97,9 @@ class MyClass {
 }
 
 print(MyClass) // {prototype: Object, properties: {__call__: function, increaseA: function}}
-myInstance = MyClass(10) // {prototype: MyClass, properties: {a: 10, b: 20, c: 10}}
+myInstance = MyClass(10) // {prototype: MyClass, properties: {a: 10, b: 20}}
 
 class MyExtendedClass extends MyClass {
-    c = 20 // Overrides the previous definition of c
-
     constructor(a, d) {
         super(a)
         this.d = 20
@@ -115,7 +112,7 @@ class MyExtendedClass extends MyClass {
 }
 
 print(MyExtendedClass) // {prototype: Object, properties: {__call__: function, increaseA: function, increaseB: function}}
-myExtendedInstance = MyExtendedClass(40, 80) // {prototype: MyExtendedClass, properties: {a: 40, b: 20, c: 10, d: 20}}
+myExtendedInstance = MyExtendedClass(40, 80) // {prototype: MyExtendedClass, properties: {a: 40, b: 20, d: 20}}
 
 
 
@@ -145,6 +142,38 @@ if (a < 10) {
 
 
 
+// Switch
+
+let action = "philosophy"
+switch(action) {
+  case "greet":
+    print("hello, world!")
+    break
+  case "bye":
+    print("goodbye, world!")
+    break
+  default:
+    print("who are you? why are you? what are you?")
+}
+
+
+
+// Match
+
+let left = 10
+let operator = "*"
+let right = 20
+
+let result = match(operator) {
+    case "+": left + right
+    case "-": left - right
+    case "*": left * right
+    case "/": left / right
+    default: throw "Invalid operator"
+}
+
+
+
 // Loops
 
 loop {
@@ -168,3 +197,10 @@ for (i, num in enumerate(iterable)) {
 
 for (let i = 0; i < 10; i++) {
 }
+
+
+
+// Errors
+
+// every error throws with the stack trace, if there is a stack trace
+throw "Hello, world!"
