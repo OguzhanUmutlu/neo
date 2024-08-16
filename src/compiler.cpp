@@ -333,7 +333,8 @@ CompileTimeValue Compiler::executeSingleExpression(Scope *scope, vector<Token *>
             }
             if (kwargs.size() > 0) {
                 kwargsValue = "_neo_temp_" + to_string(++_id);
-                scope->append("NeoHashMap *" + kwargsValue + " = NEO_create_hashmap(32);\n");
+                scope->append("NeoHashMap *" + kwargsValue + " = NEO_create_hashmap(" +
+                              to_string((int) kwargs.size() * 1.33) + ");\n");
                 for (auto kwarg: kwargs) {
                     scope->append("NEO_hashmap_set(" + kwargsValue + ", \"" + kwarg.first + "\", " +
                                   kwarg.second.pointer + ");\n");
